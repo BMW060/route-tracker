@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Route Time Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="screen active">
+            <div class="container">
+                <h1>🚗 Route Time Tracker</h1>
+                <div class="auth-form">
+                    <input type="text" id="username" placeholder="Username" autocomplete="off">
+                    <input type="password" id="password" placeholder="Password" autocomplete="off">
+                    <button onclick="authenticate()" class="btn-primary">Login</button>
+                    <p class="error-message" id="auth-error"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Menu Screen -->
+        <div id="menu-screen" class="screen">
+            <div class="container">
+                <h1>Route Time Tracker</h1>
+                <div class="menu-buttons">
+                    <button onclick="showStatistics()" class="btn-primary">📊 View Statistics</button>
+                    <button onclick="showRouteSelection()" class="btn-primary">🚦 Begin a Drive</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Route Selection Screen -->
+        <div id="route-selection-screen" class="screen">
+            <div class="container">
+                <h2>Select Route</h2>
+                <div id="route-buttons" class="route-buttons"></div>
+                <button onclick="showMenu()" class="btn-secondary">← Back</button>
+            </div>
+        </div>
+
+        <!-- Statistics Screen -->
+        <div id="statistics-screen" class="screen">
+            <div class="container">
+                <h2>Route Statistics</h2>
+                <div id="stats-route-buttons" class="route-buttons"></div>
+                <div id="statistics-display"></div>
+                <button onclick="showMenu()" class="btn-secondary">← Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Drive Screen -->
+        <div id="drive-screen" class="screen">
+            <div class="container">
+                <h2 id="route-name"></h2>
+                <div id="drive-status" class="drive-status">
+                    <p class="status-text">Press START to begin your drive</p>
+                </div>
+                <div id="checkpoint-info" class="checkpoint-info"></div>
+                <div id="section-times" class="section-times"></div>
+                <div id="drive-buttons" class="drive-buttons">
+                    <button id="start-drive-btn" onclick="startDrive()" class="btn-primary btn-large">START DRIVE</button>
+                    <button id="checkpoint-btn" onclick="recordCheckpoint()" class="btn-success btn-large" style="display:none;">CHECKPOINT</button>
+                </div>
+                <button onclick="cancelDrive()" class="btn-secondary">← Cancel Drive</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="container">
+                <h2>Trip Complete!</h2>
+                <div id="results-display"></div>
+                <div class="save-buttons">
+                    <button onclick="saveTrip()" class="btn-success">✓ Keep Trip</button>
+                    <button onclick="discardTrip()" class="btn-warning">✗ Discard Trip</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
