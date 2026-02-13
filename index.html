@@ -34,6 +34,7 @@
                     <button onclick="showStatistics()" class="btn-primary">📊 View Statistics</button>
                     <button onclick="showRouteSelection()" class="btn-primary">🚦 Begin a Drive</button>
                     <button onclick="showDeleteTrips()" class="btn-primary">🗑️ Delete Trips</button>
+                    <button onclick="showExportData()" class="btn-primary">💾 Export Data</button>
                 </div>
             </div>
         </div>
@@ -63,6 +64,18 @@
                 <h2>Delete Trips</h2>
                 <div id="delete-route-buttons" class="route-buttons"></div>
                 <div id="trips-list"></div>
+                <button onclick="showMenu()" class="btn-secondary">← Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Export Data Screen -->
+        <div id="export-data-screen" class="screen">
+            <div class="container">
+                <h2>Export Data to CSV</h2>
+                <p style="color: rgba(255,255,255,0.7); text-align: center; margin-bottom: 20px;">
+                    Select a route to download its trip data as a CSV file
+                </p>
+                <div id="export-route-buttons" class="route-buttons"></div>
                 <button onclick="showMenu()" class="btn-secondary">← Back to Menu</button>
             </div>
         </div>
