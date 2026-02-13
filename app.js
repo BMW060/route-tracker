@@ -165,6 +165,22 @@ function showDeleteTrips() {
     showScreen('delete-trips-screen');
 }
 
+function showExportData() {
+    const container = document.getElementById('export-route-buttons');
+    container.innerHTML = '';
+    
+    Object.keys(ROUTES).forEach(routeId => {
+        const route = ROUTES[routeId];
+        const button = document.createElement('button');
+        button.className = 'route-btn';
+        button.innerHTML = `<strong>${routeId}:</strong> ${route.name}`;
+        button.onclick = () => exportRouteToCSV(routeId);
+        container.appendChild(button);
+    });
+    
+    showScreen('export-data-screen');
+}
+
 // Route selection
 function selectRoute(routeId) {
     currentRoute = routeId;
@@ -706,5 +722,84 @@ function deleteAllTrips(routeId) {
     
     request.onerror = () => {
         alert('Error loading trips for deletion');
+    };
+}
+
+// Export data functionality
+function exportRouteToCSV(routeId) {
+    const transaction = db.transaction(['trips'], 'readonly');
+    const store = transaction.objectStore('trips');
+    const index = store.index('routeId');
+    const request = index.getAll(routeId);
+    
+    request.onsuccess = () => {
+        const trips = request.result;
+        const route = ROUTES[routeId];
+        
+        if (trips.length === 0) {
+            alert(`No trips recorded for ${route.name} yet. Nothing to export.`);
+            return;
+        }
+        
+        // Sort trips by timestamp (oldest first, like the Python version)
+        trips.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        
+        // Determine number of sections from first trip
+        const numSections = trips[0].sectionTimes.length;
+        
+        // Create CSV headers (matching Python format)
+        const headers = ['timestamp', 'total_time'];
+        for (let i = 1; i <= numSections; i++) {
+            headers.push(`section_${i}`);
+        }
+        
+        // Create CSV rows
+        const rows = [headers.join(',')];
+        
+        trips.forEach(trip => {
+            const date = new Date(trip.timestamp);
+            
+            // Format timestamp as YYYY-MM-DD HH:MM:SS (matching Python format)
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            
+            // Round total time and section times to 2 decimal places (matching Python)
+            const totalTime = trip.totalTime.toFixed(2);
+            const sectionTimes = trip.sectionTimes.map(t => t.toFixed(2));
+            
+            // Build row
+            const row = [timestamp, totalTime, ...sectionTimes];
+            rows.push(row.join(','));
+        });
+        
+        // Create CSV content
+        const csvContent = rows.join('\n');
+        
+        // Create filename (matching Python format: route_1_72nd.csv)
+        const routeName = route.name.replace(/<->/g, '_').replace(/ /g, '_');
+        const filename = `route_${routeId}_${routeName}.csv`;
+        
+        // Trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert(`✓ Exported ${trips.length} trip${trips.length > 1 ? 's' : ''} to ${filename}`);
+    };
+    
+    request.onerror = () => {
+        alert('Error loading trips for export');
     };
 }
