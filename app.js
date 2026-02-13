@@ -148,6 +148,23 @@ function showStatistics() {
     showScreen('statistics-screen');
 }
 
+function showDeleteTrips() {
+    const container = document.getElementById('delete-route-buttons');
+    container.innerHTML = '';
+    
+    Object.keys(ROUTES).forEach(routeId => {
+        const route = ROUTES[routeId];
+        const button = document.createElement('button');
+        button.className = 'route-btn';
+        button.innerHTML = `<strong>${routeId}:</strong> ${route.name}`;
+        button.onclick = () => displayTripsForDeletion(routeId);
+        container.appendChild(button);
+    });
+    
+    document.getElementById('trips-list').innerHTML = '<p class="no-data">Select a route to manage trips</p>';
+    showScreen('delete-trips-screen');
+}
+
 // Route selection
 function selectRoute(routeId) {
     currentRoute = routeId;
@@ -585,3 +602,109 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Delete trips functionality
+function displayTripsForDeletion(routeId) {
+    const transaction = db.transaction(['trips'], 'readonly');
+    const store = transaction.objectStore('trips');
+    const index = store.index('routeId');
+    const request = index.getAll(routeId);
+    
+    request.onsuccess = () => {
+        const trips = request.result;
+        const container = document.getElementById('trips-list');
+        const route = ROUTES[routeId];
+        
+        if (trips.length === 0) {
+            container.innerHTML = `<p class="no-data">No trips recorded for ${route.name} yet.</p>`;
+            return;
+        }
+        
+        let html = `<h3 style="color: #4ecca3; margin-bottom: 20px;">Trips for ${route.name}</h3>`;
+        html += `<p style="color: rgba(255,255,255,0.6); margin-bottom: 20px;">Total trips: ${trips.length}</p>`;
+        
+        // Sort trips by timestamp (newest first)
+        trips.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        trips.forEach(trip => {
+            const date = new Date(trip.timestamp);
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            html += `
+                <div class="trip-item">
+                    <div class="trip-info">
+                        <div class="trip-date">${formattedDate}</div>
+                        <div class="trip-time">Total: ${formatTime(trip.totalTime)}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTrip(${trip.id}, '${routeId}')">Delete</button>
+                </div>
+            `;
+        });
+        
+        // Add delete all button
+        html += `
+            <button class="delete-all-btn" onclick="deleteAllTrips('${routeId}')">
+                Delete All ${trips.length} Trip${trips.length > 1 ? 's' : ''}
+            </button>
+        `;
+        
+        container.innerHTML = html;
+    };
+    
+    request.onerror = () => {
+        document.getElementById('trips-list').innerHTML = '<p class="no-data">Error loading trips</p>';
+    };
+}
+
+function deleteTrip(tripId, routeId) {
+    if (!confirm('Are you sure you want to delete this trip?')) {
+        return;
+    }
+    
+    const transaction = db.transaction(['trips'], 'readwrite');
+    const store = transaction.objectStore('trips');
+    const request = store.delete(tripId);
+    
+    request.onsuccess = () => {
+        // Refresh the trip list
+        displayTripsForDeletion(routeId);
+    };
+    
+    request.onerror = () => {
+        alert('Error deleting trip');
+    };
+}
+
+function deleteAllTrips(routeId) {
+    const route = ROUTES[routeId];
+    if (!confirm(`Are you sure you want to delete ALL trips for ${route.name}? This cannot be undone!`)) {
+        return;
+    }
+    
+    const transaction = db.transaction(['trips'], 'readwrite');
+    const store = transaction.objectStore('trips');
+    const index = store.index('routeId');
+    const request = index.getAllKeys(routeId);
+    
+    request.onsuccess = () => {
+        const keys = request.result;
+        const deleteTransaction = db.transaction(['trips'], 'readwrite');
+        const deleteStore = deleteTransaction.objectStore('trips');
+        
+        keys.forEach(key => {
+            deleteStore.delete(key);
+        });
+        
+        deleteTransaction.oncomplete = () => {
+            displayTripsForDeletion(routeId);
+        };
+        
+        deleteTransaction.onerror = () => {
+            alert('Error deleting trips');
+        };
+    };
+    
+    request.onerror = () => {
+        alert('Error loading trips for deletion');
+    };
+}
