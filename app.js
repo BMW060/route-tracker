@@ -181,7 +181,12 @@ function startDrive() {
     sectionTimes = [];
     
     document.getElementById('start-drive-btn').style.display = 'none';
-    document.getElementById('checkpoint-btn').style.display = 'block';
+    
+    // Reset checkpoint button to its normal function
+    const checkpointBtn = document.getElementById('checkpoint-btn');
+    checkpointBtn.style.display = 'block';
+    checkpointBtn.textContent = 'CHECKPOINT';
+    checkpointBtn.onclick = recordCheckpoint;
     
     showNextCheckpoint();
     startTimer();
