@@ -33,6 +33,7 @@
                 <div class="menu-buttons">
                     <button onclick="showStatistics()" class="btn-primary">📊 View Statistics</button>
                     <button onclick="showRouteSelection()" class="btn-primary">🚦 Begin a Drive</button>
+                    <button onclick="showDeleteTrips()" class="btn-primary">🗑️ Delete Trips</button>
                 </div>
             </div>
         </div>
@@ -52,6 +53,16 @@
                 <h2>Route Statistics</h2>
                 <div id="stats-route-buttons" class="route-buttons"></div>
                 <div id="statistics-display"></div>
+                <button onclick="showMenu()" class="btn-secondary">← Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Delete Trips Screen -->
+        <div id="delete-trips-screen" class="screen">
+            <div class="container">
+                <h2>Delete Trips</h2>
+                <div id="delete-route-buttons" class="route-buttons"></div>
+                <div id="trips-list"></div>
                 <button onclick="showMenu()" class="btn-secondary">← Back to Menu</button>
             </div>
         </div>
